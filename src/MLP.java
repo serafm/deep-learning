@@ -16,7 +16,7 @@ public class MLP {
 
     private void LoadDatasets(File filename){
         // Load datasets (train/test) from file
-        // Encode categories
+        // Encode categories(K)
 
     }
 
