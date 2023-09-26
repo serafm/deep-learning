@@ -3,7 +3,7 @@ import java.util.ArrayList;
 
 public class Main {
     public static void main(String[] args) {
-        MLP mlp = new MLP(1,3,1,1,1,"relu");
+        MultilayerPerceptron mlp = new MultilayerPerceptron(1,3,1,1,1,"relu");
         mlp.LoadDataset(Path.of("data/train.csv"));
         ArrayList<ArrayList<String>> train = mlp.getData();
 
