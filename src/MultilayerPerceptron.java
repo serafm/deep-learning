@@ -251,18 +251,22 @@ public class MultilayerPerceptron {
         return selectBackpropagationDerivative(outputLayerOutput)*(outputLayerOutput - this.inputData[inputDataId][2]);
     }
 
-    public float deltaHiddenLayer3(int hiddenNeuron, int inputDataId){
-        int nextLayerSize = this.parametersPerInput[inputDataId].getOutputs().length;
-        float[][] w = parametersPerInput[inputDataId].getOutputWeights();
-        float[] hiddenNeuronOutputs = this.parametersPerInput[inputDataId].getHidden3Outputs();
-        float g = selectBackpropagationDerivative(hiddenNeuronOutputs[hiddenNeuron]);
-        float delta = 0;
-        float sumOfOutputLayerNeuronsDelta = 0F;
-        for(int j=0; j<nextLayerSize; j++){
-            sumOfOutputLayerNeuronsDelta += w[inputDataId][j]*deltaOutput(hiddenNeuron, inputDataId);
+    // Calculate the delta of each neuron in hidden layer 3
+    public float[] deltaHiddenLayer3(int inputDataNo){
+        float[] deltaOfHidden3 = new float[this.numOfHidden3]; // list of delta values of neurons
+        float[][] w = parametersPerInput[inputDataNo].getOutputWeights(); // list of output layer weights
+        float[] hiddenNeuronOutputs = this.parametersPerInput[inputDataNo].getHidden3Outputs(); // neurons list of hidden layer 3
+        for(int hiddenNeuron=0; hiddenNeuron<this.numOfHidden3; hiddenNeuron++){ // for each neuron
+            float g = selectBackpropagationDerivative(hiddenNeuronOutputs[hiddenNeuron]); // derivative of neuron output
+            float neuronDelta = 0; // initialize delta of neuron
+            float sumOfOutputLayerNeuronsDelta = 0F; // initialize summation of weight*delta of each output neuron
+            for(int j=0; j<this.numOfCategories; j++){
+                sumOfOutputLayerNeuronsDelta += w[hiddenNeuron][j]*deltaOutput(hiddenNeuron, inputDataNo); // CHECK SWAP [hiddenNeuron][j]
+            }
+            neuronDelta = g*sumOfOutputLayerNeuronsDelta; // delta of neuron
+            deltaOfHidden3[hiddenNeuron] = neuronDelta; // add it in list of neuron deltas
         }
-        delta = g*sumOfOutputLayerNeuronsDelta;
-        return delta;
+        return deltaOfHidden3; // return list of hidden layer 3 neuron deltas
     }
 
     public float deltaHiddenLayer2(int hiddenNeuron, int inputDataId){
