@@ -22,11 +22,15 @@ public class MultilayerPerceptron {
     private float[][] hidden2Weights;
     private float[][] hidden3Weights;
     private float[][] outputWeights;
+    private float[] hidden1BiasWeights;
+    private float[] hidden2BiasWeights;
+    private float[] hidden3BiasWeights;
+    private float[] outputBiasWeights;
     private float[] hidden1Outputs;
     private float[] hidden2Outputs;
     private float[] hidden3Outputs;
     private float[] outputs;
-    float[][] outputData;
+    private MLPParameters[] parametersPerInput;
     private float learningRate;
     private float threshold;
 
@@ -92,27 +96,40 @@ public class MultilayerPerceptron {
         this.hidden2Weights = new float[numOfHidden1][numOfHidden2];
         this.hidden3Weights = new float[numOfHidden2][numOfHidden3];
         this.outputWeights = new float[numOfHidden3][numOfCategories];
-
-        for (int i = 0; i < numOfInputs; i++) {
-            for (int j = 0; j < numOfHidden1; j++) {
-                this.hidden1Weights[i][j] = random.nextFloat(-1, 1); // Random weight between -1 and 1
-            }
-        }
-        for (int i = 0; i < numOfInputs; i++) {
-            for (int j = 0; j < numOfHidden2; j++) {
-                this.hidden2Weights[i][j] = random.nextFloat(-1, 1); // Random weight between -1 and 1
-            }
-        }
-        for (int i = 0; i < numOfInputs; i++) {
-            for (int j = 0; j < numOfHidden3; j++) {
-                this.hidden3Weights[i][j] = random.nextFloat(-1, 1); // Random weight between -1 and 1
-            }
-        }
-
+        this.hidden1BiasWeights = new float[numOfHidden1];
+        this.hidden2BiasWeights = new float[numOfHidden2];
+        this.hidden3BiasWeights = new float[numOfHidden3];
+        this.outputBiasWeights = new float[numOfCategories];
         this.hidden1Outputs = new float[numOfHidden1];
         this.hidden2Outputs = new float[numOfHidden2];
         this.hidden3Outputs = new float[numOfHidden3];
         this.outputs = new float[numOfCategories];
+
+        for (int i = 0; i < numOfInputs; i++) {
+            for (int j = 0; j < numOfHidden1; j++) {
+                this.hidden1BiasWeights[j] = random.nextFloat(-1, 1);
+                this.hidden1Weights[i][j] = random.nextFloat(-1, 1); // Random weight between -1 and 1
+            }
+        }
+        for (int i = 0; i < numOfHidden1; i++) {
+            for (int j = 0; j < numOfHidden2; j++) {
+                this.hidden2BiasWeights[j] = random.nextFloat(-1, 1);
+                this.hidden2Weights[i][j] = random.nextFloat(-1, 1); // Random weight between -1 and 1
+            }
+        }
+        for (int i = 0; i < numOfHidden2; i++) {
+            for (int j = 0; j < numOfHidden3; j++) {
+                this.hidden3BiasWeights[j] = random.nextFloat(-1, 1);
+                this.hidden3Weights[i][j] = random.nextFloat(-1, 1); // Random weight between -1 and 1
+            }
+        }
+        for (int i = 0; i < numOfHidden3; i++) {
+            for (int j = 0; j < numOfCategories; j++) {
+                this.outputBiasWeights[j] = random.nextFloat(-1, 1);
+                this.outputWeights[i][j] = random.nextFloat(-1, 1); // Random weight between -1 and 1
+            }
+        }
+
     }
 
     private void MLPArchitecture(float learningRate, float threshold){
@@ -128,34 +145,39 @@ public class MultilayerPerceptron {
     private void ForwardPass(float[][] x, int d, float[] y, int K){
         // calculates the vector
         // output y (dimension K) of MLP given the input vector x (Dimension d)
-        this.outputData = new float[inputData.length][this.numOfCategories];
+        this.parametersPerInput = new MLPParameters[this.inputData.length];
 
         for(int i=0; i<inputData.length; i++){
             for(int h=0; h<hidden1Outputs.length; h++){
-                for(int j=0; j<this.numOfInputs; j++){
+                for(int j=0; j<d; j++){
                     hidden1Outputs[h] += inputData[i][j]*hidden1Weights[i][j];
                 }
-                hidden1Outputs[h] = selectActivationFunction(hidden1Outputs[h]);
+                hidden1Outputs[h] = selectActivationFunction(hidden1Outputs[h] + hidden1BiasWeights[h]);
             }
             for(int h=0; h<hidden2Outputs.length; h++){
                 for(int j=0; j<this.numOfHidden1; j++){
                     hidden2Outputs[h] += hidden1Outputs[j]*hidden2Weights[i][j];
                 }
-                hidden2Outputs[h] = selectActivationFunction(hidden1Outputs[h]);
+                hidden2Outputs[h] = selectActivationFunction(hidden1Outputs[h] + hidden2BiasWeights[h]);
             }
             for(int h=0; h<hidden3Outputs.length; h++){
                 for(int j=0; j<this.numOfHidden2; j++){
                     hidden3Outputs[h] += hidden2Outputs[j]*hidden3Weights[i][j];
                 }
-                hidden3Outputs[h] = selectActivationFunction(hidden1Outputs[h]);
+                hidden3Outputs[h] = selectActivationFunction(hidden1Outputs[h] + hidden3BiasWeights[h]);
             }
             for(int h=0; h<outputs.length; h++){
                 for(int j=0; j<this.numOfHidden3; j++){
                     outputs[h] += hidden3Outputs[j]*outputWeights[i][j];
                 }
-                outputs[h] = selectActivationFunction(outputs[h]);
+                outputs[h] = logistic(outputs[h] + outputBiasWeights[h]);
             }
-            this.outputData[i] = outputs;
+
+            MLPParameters mlpParameters = new MLPParameters(hidden1Weights, hidden2Weights, hidden3Weights,
+                    outputWeights, hidden1BiasWeights, hidden2BiasWeights, hidden3BiasWeights, outputBiasWeights,
+                    hidden1Outputs, hidden2Outputs, hidden3Outputs, outputs);
+
+            parametersPerInput[i] = mlpParameters;
         }
     }
 
@@ -163,9 +185,11 @@ public class MultilayerPerceptron {
         // takes vectors x
         // Dimension d (input) and T dimension K (desired output) and computes the derivatives of the error
         // as to any parameter (weight or polarization) of the network by updating the corresponding tables
+
+
     }
 
-    private void train(){
+    private void train(int batch_size){
 
     }
 
@@ -180,8 +204,34 @@ public class MultilayerPerceptron {
             default:
                 return logistic(x);
         }
+    }
 
-        return
+    public float selectBackpropagationDerivative(float x){
+        switch(activationFunction) {
+            case "tanh":
+                return derivativeTanh(x);
+            case "relu":
+                return derivativeRelu(x);
+            case "logistic":
+                return derivativeLogistic(x);
+            default:
+                return derivativeLogistic(x);
+        }
+    }
+
+    public float derivativeTanh(float x){
+        return (float) (1 - Math.pow(tanh(x), 2));
+    }
+
+    public float derivativeRelu(float x){
+        if (x < 0){
+            return 0F;
+        }
+        return 1F;
+    }
+
+    public float derivativeLogistic(float x){
+        return (float) (Math.exp(-x)/Math.pow((1 + Math.exp(-x)), 2));
     }
 
     public int classification(float[] outputs) {
@@ -196,6 +246,96 @@ public class MultilayerPerceptron {
             }
         }
         return category;
+    }
+
+    public float deltaOutput(int outputNeuron, int inputDataId){
+        float outputLayerOutput = this.parametersPerInput[inputDataId].getOutputs()[outputNeuron];
+        return selectBackpropagationDerivative(outputLayerOutput)*(outputLayerOutput - this.inputData[inputDataId][2]);
+    }
+
+    public float deltaHiddenLayer3(int hiddenNeuron, int inputDataId){
+        int nextLayerSize = this.parametersPerInput[inputDataId].getOutputs().length;
+        float[][] w = parametersPerInput[inputDataId].getOutputWeights();
+        float[] hiddenNeuronOutputs = this.parametersPerInput[inputDataId].getHidden3Outputs();
+        float g = selectBackpropagationDerivative(hiddenNeuronOutputs[hiddenNeuron]);
+        float delta = 0;
+        float sumOfOutputLayerNeuronsDelta = 0F;
+        for(int j=0; j<nextLayerSize; j++){
+            sumOfOutputLayerNeuronsDelta += w[inputDataId][j]*deltaOutput(hiddenNeuron, inputDataId);
+        }
+        delta = g*sumOfOutputLayerNeuronsDelta;
+        return delta;
+    }
+
+    public float deltaHiddenLayer2(int hiddenNeuron, int inputDataId){
+        int nextLayerSize = this.parametersPerInput[inputDataId].getHidden3Outputs().length;
+        float[][] w = parametersPerInput[inputDataId].getHidden3Weights();
+        float[] hiddenNeuronOutputs = this.parametersPerInput[inputDataId].getHidden2Outputs();
+        float g = selectBackpropagationDerivative(hiddenNeuronOutputs[hiddenNeuron]);
+        float delta = 0;
+        float sumOfOutputLayerNeuronsDelta = 0F;
+        for(int j=0; j<nextLayerSize; j++){
+            sumOfOutputLayerNeuronsDelta += w[inputDataId][j]*deltaOutput(hiddenNeuron, inputDataId);
+        }
+        delta = g*sumOfOutputLayerNeuronsDelta;
+        return delta;
+    }
+
+    public float deltaHiddenLayer1(int hiddenNeuron, int inputDataId){
+        int nextLayerSize = this.parametersPerInput[inputDataId].getHidden2Outputs().length;
+        float[][] w = parametersPerInput[inputDataId].getHidden2Weights();
+        float[] hiddenNeuronOutputs = this.parametersPerInput[inputDataId].getHidden1Outputs();
+        float g = selectBackpropagationDerivative(hiddenNeuronOutputs[hiddenNeuron]);
+        float delta = 0;
+        float sumOfOutputLayerNeuronsDelta = 0F;
+        for(int j=0; j<nextLayerSize; j++){
+            sumOfOutputLayerNeuronsDelta += w[inputDataId][j]*deltaOutput(hiddenNeuron, inputDataId);
+        }
+        delta = g*sumOfOutputLayerNeuronsDelta;
+        return delta;
+    }
+
+    public float[] selectHiddenLayerOutputs(int hiddenLayer, int inputDataId){
+        switch (hiddenLayer) {
+            case 1:
+                return this.parametersPerInput[inputDataId].getHidden1Outputs();
+            case 2:
+                return this.parametersPerInput[inputDataId].getHidden2Outputs();
+            case 3:
+                return this.parametersPerInput[inputDataId].getHidden3Outputs();
+            default:
+                throw new RuntimeException("Wrong hidden layer. The available are 1, 2, 3.");
+        }
+    }
+
+    public float[] selectNextLayerOutputs(int layer, int inputDataId){
+        switch (layer) {
+            case 0:
+                return this.parametersPerInput[inputDataId].getHidden1Outputs();
+            case 1:
+                return this.parametersPerInput[inputDataId].getHidden2Outputs();
+            case 2:
+                return this.parametersPerInput[inputDataId].getHidden3Outputs();
+            case 3:
+                return this.parametersPerInput[inputDataId].getOutputs();
+            default:
+                throw new RuntimeException("Wrong layer. The available layers are 0, 1, 2, 3.");
+        }
+    }
+
+    public float[][] selectLayerWeights(int layer, int inputDataId){
+        switch (layer) {
+            case 0:
+                return this.parametersPerInput[inputDataId].getHidden1Weights();
+            case 1:
+                return this.parametersPerInput[inputDataId].getHidden2Weights();
+            case 2:
+                return this.parametersPerInput[inputDataId].getHidden3Weights();
+            case 3:
+                return this.parametersPerInput[inputDataId].getOutputWeights();
+            default:
+                throw new RuntimeException("Wrong layer. The available layers are 0, 1, 2, 3.");
+        }
     }
 
     public int getNumOfInputs() {
