@@ -2,8 +2,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.file.Path;
 import java.lang.Math;
-import java.util.Collections;
-import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
@@ -410,11 +408,11 @@ public class MultilayerPerceptron {
         this.hidden3Weights = hidden3Weights;
     }
 
-    public float[] getOutputWeights() {
+    public float[][] getOutputWeights() {
         return outputWeights;
     }
 
-    public void setOutputWeights(float[] outputWeights) {
+    public void setOutputWeights(float[][] outputWeights) {
         this.outputWeights = outputWeights;
     }
 
