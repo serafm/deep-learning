@@ -32,6 +32,20 @@ public class MultilayerPerceptron {
     private float learningRate;
     private float threshold;
 
+    private float[] deltaOfHidden3;
+    private float[] deltaOfHidden2;
+    private float[] deltaOfHidden1;
+    private float[] deltaOfOutput;
+
+    private float[][] outputWeightsDerivatives;
+    private float[][] hidden3WeightsDerivatives;
+    private float[][] hidden2WeightsDerivatives;
+    private float[][] hidden1WeightsDerivatives;
+    private float[] outputBiasDerivatives;
+    private float[] hidden3BiasDerivatives;
+    private float[] hidden2BiasDerivatives;
+    private float[] hidden1BiasDerivatives;
+
     MultilayerPerceptron(int d, int K, int H1, int H2, int H3, String actv){
         this.numOfInputs = d;
         this.numOfCategories = K;
@@ -173,18 +187,24 @@ public class MultilayerPerceptron {
 
             MLPParameters mlpParameters = new MLPParameters(hidden1Weights, hidden2Weights, hidden3Weights,
                     outputWeights, hidden1BiasWeights, hidden2BiasWeights, hidden3BiasWeights, outputBiasWeights,
-                    hidden1Outputs, hidden2Outputs, hidden3Outputs, outputs);
+                    hidden1Outputs, hidden2Outputs, hidden3Outputs, outputs, outputWeightsDerivatives, hidden3WeightsDerivatives,
+                    hidden2WeightsDerivatives, hidden1WeightsDerivatives, outputBiasDerivatives, hidden3BiasDerivatives,
+                    hidden2BiasDerivatives, hidden1BiasDerivatives);
 
-            parametersPerInput[i] = mlpParameters;
+            this.parametersPerInput[i] = mlpParameters;
         }
     }
 
-    private void Backpropagation(float x, int d, float t, int K){
+    private void Backpropagation(float[][] x, int d, float[] t, int K){
         // takes vectors x
         // Dimension d (input) and T dimension K (desired output) and computes the derivatives of the error
         // as to any parameter (weight or polarization) of the network by updating the corresponding tables
-
-
+        for(int i=0; i<x.length; i++){
+            deltaOutput(i);
+            deltaHiddenLayer3(i);
+            deltaHiddenLayer2(i);
+            deltaHiddenLayer1(i);
+        }
     }
 
     private void train(int batch_size){
@@ -246,56 +266,93 @@ public class MultilayerPerceptron {
         return category;
     }
 
-    public float deltaOutput(int outputNeuron, int inputDataId){
-        float outputLayerOutput = this.parametersPerInput[inputDataId].getOutputs()[outputNeuron];
-        return selectBackpropagationDerivative(outputLayerOutput)*(outputLayerOutput - this.inputData[inputDataId][2]);
+    public void deltaOutput(int inputDataId){
+        this.outputWeightsDerivatives = new float[numOfHidden3][numOfCategories];
+        this.outputBiasDerivatives = new float[numOfCategories];
+        this.deltaOfOutput = new float[numOfCategories];
+        for(int i=0; i<numOfCategories; i++){
+            float outputLayerOutput = this.parametersPerInput[inputDataId].getOutputs()[i];
+            deltaOfOutput[i] = selectBackpropagationDerivative(outputLayerOutput)*(outputLayerOutput - this.inputData[inputDataId][2]);
+            for(int j=0; j<numOfHidden3; j++){
+                outputWeightsDerivatives[i][j] = deltaOfOutput[i]*this.hidden3Outputs[j];
+            }
+            outputBiasDerivatives[i] = deltaOfOutput[i];
+        }
+        this.parametersPerInput[inputDataId].setOutputWeightsDerivatives(outputWeightsDerivatives);
+        this.parametersPerInput[inputDataId].setOutputBiasDerivatives(outputBiasDerivatives);
     }
 
     // Calculate the delta of each neuron in hidden layer 3
-    public float[] deltaHiddenLayer3(int inputDataNo){
-        float[] deltaOfHidden3 = new float[this.numOfHidden3]; // list of delta values of neurons
-        float[][] w = parametersPerInput[inputDataNo].getOutputWeights(); // list of output layer weights
-        float[] hiddenNeuronOutputs = this.parametersPerInput[inputDataNo].getHidden3Outputs(); // neurons list of hidden layer 3
-        for(int hiddenNeuron=0; hiddenNeuron<this.numOfHidden3; hiddenNeuron++){ // for each neuron
-            float g = selectBackpropagationDerivative(hiddenNeuronOutputs[hiddenNeuron]); // derivative of neuron output
-            float neuronDelta = 0; // initialize delta of neuron
+    public void deltaHiddenLayer3(int inputDataId){
+        this.hidden3WeightsDerivatives = new float[numOfHidden3][numOfHidden2];
+        this.hidden3BiasDerivatives = new float[numOfHidden3];
+        this.deltaOfHidden3 = new float[numOfHidden3];
+        float[][] w = parametersPerInput[inputDataId].getOutputWeights(); // list of output layer weights
+        float[] hiddenNeuronOutputs = this.parametersPerInput[inputDataId].getHidden3Outputs(); // neurons list of hidden layer 3
+        for(int i=0; i<this.numOfHidden3; i++){ // for each neuron
+            float g = selectBackpropagationDerivative(hiddenNeuronOutputs[i]); // derivative of neuron output
             float sumOfOutputLayerNeuronsDelta = 0F; // initialize summation of weight*delta of each output neuron
             for(int j=0; j<this.numOfCategories; j++){
-                sumOfOutputLayerNeuronsDelta += w[hiddenNeuron][j]*deltaOutput(hiddenNeuron, inputDataNo); // CHECK SWAP [hiddenNeuron][j]
+                sumOfOutputLayerNeuronsDelta += w[i][j]*this.deltaOfOutput[j]; //
             }
-            neuronDelta = g*sumOfOutputLayerNeuronsDelta; // delta of neuron
-            deltaOfHidden3[hiddenNeuron] = neuronDelta; // add it in list of neuron deltas
+            float neuronDelta = g*sumOfOutputLayerNeuronsDelta; // delta of neuron
+            deltaOfHidden3[i] = neuronDelta; // add it in list of neuron deltas
+            for(int j=0; j<this.numOfHidden2; j++) {
+                hidden3WeightsDerivatives[i][j] = deltaOfHidden3[i] * this.hidden2Outputs[j];
+                hidden3BiasDerivatives[i] = deltaOfHidden3[i];
+            }
         }
-        return deltaOfHidden3; // return list of hidden layer 3 neuron deltas
+        this.parametersPerInput[inputDataId].setHidden3WeightsDerivatives(hidden3WeightsDerivatives);
+        this.parametersPerInput[inputDataId].setHidden3BiasDerivatives(hidden3BiasDerivatives);
     }
 
-    public float deltaHiddenLayer2(int hiddenNeuron, int inputDataId){
-        int nextLayerSize = this.parametersPerInput[inputDataId].getHidden3Outputs().length;
-        float[][] w = parametersPerInput[inputDataId].getHidden3Weights();
-        float[] hiddenNeuronOutputs = this.parametersPerInput[inputDataId].getHidden2Outputs();
-        float g = selectBackpropagationDerivative(hiddenNeuronOutputs[hiddenNeuron]);
-        float delta = 0;
-        float sumOfOutputLayerNeuronsDelta = 0F;
-        for(int j=0; j<nextLayerSize; j++){
-            sumOfOutputLayerNeuronsDelta += w[inputDataId][j]*deltaOutput(hiddenNeuron, inputDataId);
+    public void deltaHiddenLayer2(int inputDataId){
+        this.hidden2WeightsDerivatives = new float[numOfHidden2][numOfHidden1];
+        this.hidden2BiasDerivatives = new float[numOfHidden2];
+        this.deltaOfHidden2 = new float[this.numOfHidden2]; // list of delta values of neurons
+        float[][] w = parametersPerInput[inputDataId].getHidden3Weights(); // list of hidden layer 3 weights
+        float[] hiddenNeuronOutputs = this.parametersPerInput[inputDataId].getHidden2Outputs(); // neurons list of hidden layer 2
+        for(int i=0; i<this.numOfHidden2; i++){ // for each neuron
+            float g = selectBackpropagationDerivative(hiddenNeuronOutputs[i]); // derivative of neuron output
+            float sumOfOutputLayerNeuronsDelta = 0F; // initialize summation of weight*delta of each output neuron
+            for(int j=0; j<this.numOfHidden3; j++){
+                sumOfOutputLayerNeuronsDelta += w[i][j]*this.deltaOfHidden3[j]; // CHECK SWAP [i][j]
+            }
+            float neuronDelta = g*sumOfOutputLayerNeuronsDelta; // delta of neuron
+            deltaOfHidden2[i] = neuronDelta; // add it in list of neuron deltas
+            for(int j=0; j<this.numOfHidden1; j++) {
+                hidden2WeightsDerivatives[i][j] = deltaOfHidden2[i] * this.hidden1Outputs[j];
+                hidden2BiasDerivatives[i] = deltaOfHidden2[i];
+            }
         }
-        delta = g*sumOfOutputLayerNeuronsDelta;
-        return delta;
+        this.parametersPerInput[inputDataId].setHidden2WeightsDerivatives(hidden2WeightsDerivatives);
+        this.parametersPerInput[inputDataId].setHidden2BiasDerivatives(hidden2BiasDerivatives);
     }
 
-    public float deltaHiddenLayer1(int hiddenNeuron, int inputDataId){
-        int nextLayerSize = this.parametersPerInput[inputDataId].getHidden2Outputs().length;
-        float[][] w = parametersPerInput[inputDataId].getHidden2Weights();
-        float[] hiddenNeuronOutputs = this.parametersPerInput[inputDataId].getHidden1Outputs();
-        float g = selectBackpropagationDerivative(hiddenNeuronOutputs[hiddenNeuron]);
-        float delta = 0;
-        float sumOfOutputLayerNeuronsDelta = 0F;
-        for(int j=0; j<nextLayerSize; j++){
-            sumOfOutputLayerNeuronsDelta += w[inputDataId][j]*deltaOutput(hiddenNeuron, inputDataId);
+    public void deltaHiddenLayer1(int inputDataId){
+        this.hidden1WeightsDerivatives = new float[numOfHidden1][numOfInputs];
+        this.hidden1BiasDerivatives = new float[numOfHidden1];
+        this.deltaOfHidden1 = new float[this.numOfHidden1]; // list of delta values of neurons
+        float[][] w = parametersPerInput[inputDataId].getHidden2Weights(); // list of hidden layer 2 weights
+        float[] hiddenNeuronOutputs = this.parametersPerInput[inputDataId].getHidden1Outputs(); // neurons list of hidden layer 1
+        for(int i=0; i<this.numOfHidden1; i++){ // for each neuron
+            float g = selectBackpropagationDerivative(hiddenNeuronOutputs[i]); // derivative of neuron output
+            float sumOfOutputLayerNeuronsDelta = 0F; // initialize summation of weight*delta of each output neuron
+            for(int j=0; j<this.numOfHidden2; j++){
+                sumOfOutputLayerNeuronsDelta += w[i][j]*this.deltaOfHidden2[j]; // CHECK SWAP [i][j]
+            }
+            float neuronDelta = g*sumOfOutputLayerNeuronsDelta; // delta of neuron
+            deltaOfHidden1[i] = neuronDelta; // add it in list of neuron deltas
+            for(int j=0; j<this.numOfInputs; j++) {
+                hidden1WeightsDerivatives[i][j] = deltaOfHidden1[i] * this.inputData[inputDataId][j];
+                hidden1BiasDerivatives[i] = deltaOfHidden1[i];
+            }
         }
-        delta = g*sumOfOutputLayerNeuronsDelta;
-        return delta;
+        this.parametersPerInput[inputDataId].setHidden1WeightsDerivatives(hidden1WeightsDerivatives);
+        this.parametersPerInput[inputDataId].setHidden1BiasDerivatives(hidden1BiasDerivatives);
     }
+
+
 
     public float[] selectHiddenLayerOutputs(int hiddenLayer, int inputDataId){
         switch (hiddenLayer) {
