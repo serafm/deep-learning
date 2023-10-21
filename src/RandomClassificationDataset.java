@@ -1,3 +1,4 @@
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
 import static java.lang.Math.pow;
@@ -7,28 +8,26 @@ public class RandomClassificationDataset {
 
         // create instance of Random class
         Random rand = new Random();
-        Map<List<Float>, String> train_data = new HashMap<>();
-        Map<List<Float>, String> test_data = new HashMap<>();
+        FileWriter train = new FileWriter("data/train.csv"); ;
+        FileWriter test = new FileWriter("data/test.csv"); ;
 
         for(int i=0; i<8000; i++) {
             // Generate random points (x1,x2) in [-1,1]
             float x1 = rand.nextFloat(-1, 1);
+            x1 = Math.round(x1 * 100) / 100.0f;
             float x2 = rand.nextFloat(-1, 1);
+            x2 = Math.round(x2 * 100) / 100.0f;
             String category = getCategory(x1, x2);
-            List<Float> points = new ArrayList<>();
 
             // split the 8000 random points into train and test datasets
             if (i < 4000) {
-                points.add(x1);
-                points.add(x2);
-                train_data.put(points, category);
+                train.write(x1 + "," + x2 + "," + category + "\n");
             }else{
-                points.add(x1);
-                points.add(x2);
-                test_data.put(points, category);
+                test.write(x1 + "," + x2 + "," + category + "\n");
             }
         }
-        System.out.println(train_data);
+        train.close();
+        test.close();
     }
 
     // Classification of (x1,x2) in C1,C2,C3 categories
