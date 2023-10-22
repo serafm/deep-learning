@@ -1,8 +1,8 @@
-public class MLPParameters {
+public class OutputCategory {
 
     private int outputCategory;
 
-    public MLPParameters(int outputCategory) {
+    public OutputCategory(int outputCategory) {
         this.outputCategory = outputCategory;
     }
 
