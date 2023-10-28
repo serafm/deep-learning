@@ -217,7 +217,7 @@ public class MultilayerPerceptron {
                     }
                 }
                 // Group Update of weights
-                UpdateWeights();
+                groupUpdateWeights();
 
             } else {
                 // if Batch size=1. Serial update of weights
@@ -225,26 +225,7 @@ public class MultilayerPerceptron {
                     ForwardPass(p);
                     error += LossFunction(p);
                     Backpropagation(p);
-                    for(int i = 0; i < numOfHidden3; i++){
-                        for (int j = 0; j < numOfCategories; j++) {
-                            outputWeights[i][j] = outputWeights[i][j] - learningRate * outputWeightsDerivatives[j][i];
-                        }
-                    }
-                    for(int i = 0; i < numOfHidden2; i++) {
-                        for (int j = 0; j < numOfHidden3; j++) {
-                            hidden3Weights[i][j] = hidden3Weights[i][j] - learningRate * hidden3WeightsDerivatives[j][i];
-                        }
-                    }
-                    for(int i = 0; i < numOfHidden1; i++) {
-                        for (int j = 0; j < numOfHidden2; j++) {
-                            hidden2Weights[i][j] = hidden2Weights[i][j] - learningRate * hidden2WeightsDerivatives[j][i];
-                        }
-                    }
-                    for(int i = 0; i < numOfInputs; i++) {
-                        for (int j = 0; j < numOfHidden1; j++) {
-                            hidden1Weights[i][j] = hidden1Weights[i][j] - learningRate * hidden1WeightsDerivatives[j][i];
-                        }
-                    }
+                    serialUpdateWeights();
                 }
             }
 
@@ -253,13 +234,35 @@ public class MultilayerPerceptron {
             difference = Math.abs(previousErrorRate - mse);
             t += 1;
         }
+    }
 
+    private void serialUpdateWeights(){
+        for(int i = 0; i < numOfHidden3; i++){
+            for (int j = 0; j < numOfCategories; j++) {
+                outputWeights[i][j] = outputWeights[i][j] - learningRate * outputWeightsDerivatives[j][i];
+            }
+        }
+        for(int i = 0; i < numOfHidden2; i++) {
+            for (int j = 0; j < numOfHidden3; j++) {
+                hidden3Weights[i][j] = hidden3Weights[i][j] - learningRate * hidden3WeightsDerivatives[j][i];
+            }
+        }
+        for(int i = 0; i < numOfHidden1; i++) {
+            for (int j = 0; j < numOfHidden2; j++) {
+                hidden2Weights[i][j] = hidden2Weights[i][j] - learningRate * hidden2WeightsDerivatives[j][i];
+            }
+        }
+        for(int i = 0; i < numOfInputs; i++) {
+            for (int j = 0; j < numOfHidden1; j++) {
+                hidden1Weights[i][j] = hidden1Weights[i][j] - learningRate * hidden1WeightsDerivatives[j][i];
+            }
+        }
     }
 
     /**
      * Group update of weights
      */
-    private void UpdateWeights(){
+    private void groupUpdateWeights(){
         //System.out.println("\nNew output weights: ");
         for(int i = 0; i < numOfHidden3; i++) {
             for (int j = 0; j < numOfCategories; j++) {
