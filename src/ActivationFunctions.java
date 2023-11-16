@@ -3,12 +3,12 @@ public class ActivationFunctions {
     public ActivationFunctions(){}
 
     protected float logistic(float x){
-        return (float) (1/(1+Math.exp(Double.valueOf(-x))));
+        return (float) (1/(1+Math.exp(-x)));
     }
 
     protected float tanh(float x){
-        return (float) ((Math.exp(Double.valueOf(x) - Math.exp(Double.valueOf(-x))))
-                / (Math.exp(Double.valueOf(x) + Math.exp(Double.valueOf(-x)))));
+        return (float) ((Math.exp( x - Math.exp(-x)))
+                / ( Math.exp( x + Math.exp(-x) ) ) );
     }
 
     protected float relu(float x){
@@ -31,29 +31,19 @@ public class ActivationFunctions {
     }
 
     public float selectActivationFunction(float x, String activationFunction){
-        switch(activationFunction) {
-            case "tanh":
-                return tanh(x);
-            case "relu":
-                return relu(x);
-            case "logistic":
-                return logistic(x);
-            default:
-                return logistic(x);
-        }
+        return switch (activationFunction) {
+            case "tanh" -> tanh(x);
+            case "relu" -> relu(x);
+            default -> logistic(x);
+        };
     }
 
     public float selectBackpropagationDerivative(float x, String activationFunction){
-        switch(activationFunction) {
-            case "tanh":
-                return derivativeTanh(x);
-            case "relu":
-                return derivativeRelu(x);
-            case "logistic":
-                return derivativeLogistic(x);
-            default:
-                return derivativeLogistic(x);
-        }
+        return switch (activationFunction) {
+            case "tanh" -> derivativeTanh(x);
+            case "relu" -> derivativeRelu(x);
+            default -> derivativeLogistic(x);
+        };
     }
 
 }

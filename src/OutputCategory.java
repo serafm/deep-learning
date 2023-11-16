@@ -1,12 +1,12 @@
 public class OutputCategory {
 
-    private int outputCategory;
+    private int[] outputCategory;
 
-    public OutputCategory(int outputCategory) {
+    public OutputCategory(int[] outputCategory) {
         this.outputCategory = outputCategory;
     }
 
-    public int getOutputCategory() {
+    public int[] getOutputCategory() {
         return outputCategory;
     }
 
