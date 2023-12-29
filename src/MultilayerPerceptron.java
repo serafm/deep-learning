@@ -20,45 +20,47 @@ public class MultilayerPerceptron {
     private final String activationFunction;
     private Datapoint[] inputData;
 
-    private float[][] hidden1Weights;
-    private float[][] hidden2Weights;
-    private float[][] hidden3Weights;
-    private float[][] outputWeights;
-    private float[] hidden1BiasWeights;
-    private float[] hidden2BiasWeights;
-    private float[] hidden3BiasWeights;
-    private float[] outputBiasWeights;
-    private float[] hidden1Outputs;
-    private float[] hidden2Outputs;
-    private float[] hidden3Outputs;
-    private float[] outputs;
-    private OutputCategory[] outputCategoryPerInput = new OutputCategory[4000];
-    private final float learningRate;
-    private final float threshold;
-    private ArrayList<Float> msePerEpoch;
-    private ArrayList<OutputCategory[]> outputsPerEpoch;
+    private double[][] hidden1Weights;
+    private double[][] hidden2Weights;
+    private double[][] hidden3Weights;
+    private double[][] outputWeights;
+    private double[] hidden1BiasWeights;
+    private double[] hidden2BiasWeights;
+    private double[] hidden3BiasWeights;
+    private double[] outputBiasWeights;
+    private double[] hidden1Outputs;
+    private double[] hidden2Outputs;
+    private double[] hidden3Outputs;
+    private double[] outputs;
+    private final double learningRate;
+    private final double threshold;
+    private ArrayList<Double> msePerEpoch;
 
-    private float[] deltaOfHidden3;
-    private float[] deltaOfHidden2;
-    private float[] deltaOfHidden1;
-    private float[] deltaOfOutput;
+    private double[] deltaOfHidden3;
+    private double[] deltaOfHidden2;
+    private double[] deltaOfHidden1;
+    private double[] deltaOfOutput;
 
-    private float[][] outputWeightsDerivatives;
-    private float[] outputBiasDerivatives;
-    private float[] hidden3BiasDerivatives;
-    private float[] hidden2BiasDerivatives;
-    private float[] hidden1BiasDerivatives;
-    private float[][] hidden3WeightsDerivatives;
-    private float[][] hidden2WeightsDerivatives;
-    private float[][] hidden1WeightsDerivatives;
-    private float[] totalInputOfOutputLayer;
-    private float[] totalInputOfHidden3Layer;
-    private float[] totalInputOfHidden2Layer;
-    private float[] totalInputOfHidden1Layer;
-    private float[][] outputWeightsPartialSum;
-    private float[][] hidden3WeightsPartialSum;
-    private float[][] hidden2WeightsPartialSum;
-    private float[][] hidden1WeightsPartialSum;
+    private double[][] outputWeightsDerivatives;
+    private double[] outputBiasDerivatives;
+    private double[] hidden3BiasDerivatives;
+    private double[] hidden2BiasDerivatives;
+    private double[] hidden1BiasDerivatives;
+    private double[][] hidden3WeightsDerivatives;
+    private double[][] hidden2WeightsDerivatives;
+    private double[][] hidden1WeightsDerivatives;
+    private double[] totalInputOfOutputLayer;
+    private double[] totalInputOfHidden3Layer;
+    private double[] totalInputOfHidden2Layer;
+    private double[] totalInputOfHidden1Layer;
+    private double[][] outputWeightsPartialSum;
+    private double[][] hidden3WeightsPartialSum;
+    private double[][] hidden2WeightsPartialSum;
+    private double[][] hidden1WeightsPartialSum;
+    private double[] outputBiasPartialSum;
+    private double[] hidden3BiasPartialSum;
+    private double[] hidden2BiasPartialSum;
+    private double[] hidden1BiasPartialSum;
 
     private final ActivationFunctions actvFunc = new ActivationFunctions();
 
@@ -75,7 +77,7 @@ public class MultilayerPerceptron {
      * @param batch_size size of batches
      * @param epochs_size size of epochs
      */
-    MultilayerPerceptron(int d, int K, int H1, int H2, int H3, String actv, float learningRate, float threshold, int batch_size, int epochs_size) {
+    MultilayerPerceptron(int d, int K, int H1, int H2, int H3, String actv, double learningRate, double threshold, int batch_size, int epochs_size) {
         this.numOfInputs = d;
         this.numOfCategories = K;
         this.numOfHidden1 = H1;
@@ -114,6 +116,10 @@ public class MultilayerPerceptron {
             System.out.println("An error occurred.");
             e.printStackTrace();
         }
+
+        /**for (int i = 0; i < inputData.length; i++){
+            System.out.println(inputData[i].getX1() + " " + inputData[i].getX2() + " " + Arrays.toString(inputData[i].getTarget()) + " " + Arrays.toString(inputData[i].getOutput()));
+        }**/
     }
 
     /**
@@ -131,28 +137,28 @@ public class MultilayerPerceptron {
             default -> category = new int[]{0,0,0,1};
         }
 
-        float x1 = Float.parseFloat(data_line[0]);
-        float x2 = Float.parseFloat(data_line[1]);
+        double x1 = Double.parseDouble(data_line[0]);
+        double x2 = Double.parseDouble(data_line[1]);
 
-        inputData[row] = new Datapoint(x1, x2, category);
+        inputData[row] = new Datapoint(x1, x2, category, null);
     }
 
     /**
      * Random initialization of weights in (-1,1).
      */
     private void initializeWeights() {
-        hidden1Weights = new float[numOfHidden1][numOfInputs];
-        hidden2Weights = new float[numOfHidden2][numOfHidden1];
-        hidden3Weights = new float[numOfHidden3][numOfHidden2];
-        outputWeights = new float[numOfCategories][numOfHidden3];
-        hidden1BiasWeights = new float[numOfHidden1];
-        hidden2BiasWeights = new float[numOfHidden2];
-        hidden3BiasWeights = new float[numOfHidden3];
-        outputBiasWeights = new float[numOfCategories];
-        hidden1Outputs = new float[numOfHidden1];
-        hidden2Outputs = new float[numOfHidden2];
-        hidden3Outputs = new float[numOfHidden3];
-        outputs = new float[numOfCategories];
+        hidden1Weights = new double[numOfHidden1][numOfInputs];
+        hidden2Weights = new double[numOfHidden2][numOfHidden1];
+        hidden3Weights = new double[numOfHidden3][numOfHidden2];
+        outputWeights = new double[numOfCategories][numOfHidden3];
+        hidden1BiasWeights = new double[numOfHidden1];
+        hidden2BiasWeights = new double[numOfHidden2];
+        hidden3BiasWeights = new double[numOfHidden3];
+        outputBiasWeights = new double[numOfCategories];
+        hidden1Outputs = new double[numOfHidden1];
+        hidden2Outputs = new double[numOfHidden2];
+        hidden3Outputs = new double[numOfHidden3];
+        outputs = new double[numOfCategories];
 
         // Initialize hidden layer 1 weights and bias
         init(numOfHidden1, numOfInputs, hidden1Weights, hidden1BiasWeights);
@@ -174,13 +180,13 @@ public class MultilayerPerceptron {
      * @param weights Array of current layer weights
      * @param bias Array of current layer bias weights
      */
-    private void init(int currentLayerSize, int previousLayerSize, float[][] weights, float[] bias){
+    private void init(int currentLayerSize, int previousLayerSize, double[][] weights, double[] bias){
         Random random = new Random();
         for (int i = 0; i < currentLayerSize; i++) {
             for (int j = 0; j < previousLayerSize; j++) {
-                weights[i][j] = random.nextFloat() * 2 - 1; // Random weight between -1 and 1
+                weights[i][j] = random.nextDouble() * 2 - 1; // Random weight between -1 and 1
             }
-            bias[i] = random.nextFloat() * 2 - 1;
+            bias[i] = random.nextDouble() * 2 - 1;
         }
     }
 
@@ -189,21 +195,23 @@ public class MultilayerPerceptron {
      */
     private void GradientDescent(){
         int t = 0;
-        float previousErrorRate;
-        float difference = Float.POSITIVE_INFINITY;
-        float error = 0;
-        float mse = Float.POSITIVE_INFINITY;
+        double difference = Double.POSITIVE_INFINITY;
+        double error = 0;
+        double mse = Double.POSITIVE_INFINITY;
         msePerEpoch = new ArrayList<>();
-        outputsPerEpoch = new ArrayList<>();
 
-        outputWeightsPartialSum = new float[numOfCategories][numOfHidden3];
-        hidden3WeightsPartialSum = new float[numOfHidden3][numOfHidden2];
-        hidden2WeightsPartialSum = new float[numOfHidden2][numOfHidden1];
-        hidden1WeightsPartialSum = new float[numOfHidden1][numOfInputs];
+        outputWeightsPartialSum = new double[numOfCategories][numOfHidden3];
+        hidden3WeightsPartialSum = new double[numOfHidden3][numOfHidden2];
+        hidden2WeightsPartialSum = new double[numOfHidden2][numOfHidden1];
+        hidden1WeightsPartialSum = new double[numOfHidden1][numOfInputs];
+        outputBiasPartialSum = new double[numOfCategories];
+        hidden3BiasPartialSum = new double[numOfHidden3];
+        hidden2BiasPartialSum = new double[numOfHidden2];
+        hidden1BiasPartialSum = new double[numOfHidden1];
 
         while(t < epochs_size || difference > threshold) {
             int n = 0;
-            previousErrorRate = error;
+            double previousErrorRate = error;
             error = 0;
             if(batch_size>1 && (inputData.length % batch_size == 0)) {
                 for(int k=1; k<(inputData.length/batch_size)+1; k++) {
@@ -214,20 +222,32 @@ public class MultilayerPerceptron {
 
                         // Calculate partial summation of output weights
                         partialSum(numOfCategories, numOfHidden3, outputWeightsPartialSum, outputWeightsDerivatives);
+                        partialSumBias(numOfCategories, outputBiasPartialSum, outputBiasDerivatives);
 
                         // Calculate partial summation of hidden layer 3 weights
                         partialSum(numOfHidden3, numOfHidden2, hidden3WeightsPartialSum, hidden3WeightsDerivatives);
+                        partialSumBias(numOfHidden3, hidden3BiasPartialSum, hidden3BiasDerivatives);
 
                         // Calculate partial summation of hidden layer 2 weights
                         partialSum(numOfHidden2, numOfHidden1, hidden2WeightsPartialSum, hidden2WeightsDerivatives);
+                        partialSumBias(numOfHidden2, hidden2BiasPartialSum, hidden2BiasDerivatives);
 
                         // Calculate partial summation of hidden layer 1 weights
                         partialSum(numOfHidden1, numOfInputs, hidden1WeightsPartialSum, hidden1WeightsDerivatives);
+                        partialSumBias(numOfHidden1, hidden1BiasPartialSum, hidden1BiasDerivatives);
 
                         n += 1;
                     }
                     // Group Update of weights
                     groupUpdateWeights();
+                    outputWeightsPartialSum = new double[numOfCategories][numOfHidden3];
+                    hidden3WeightsPartialSum = new double[numOfHidden3][numOfHidden2];
+                    hidden2WeightsPartialSum = new double[numOfHidden2][numOfHidden1];
+                    hidden1WeightsPartialSum = new double[numOfHidden1][numOfInputs];
+                    outputBiasPartialSum = new double[numOfCategories];
+                    hidden3BiasPartialSum = new double[numOfHidden3];
+                    hidden2BiasPartialSum = new double[numOfHidden2];
+                    hidden1BiasPartialSum = new double[numOfHidden1];
                 }
             } else {
                 // if Batch size=1. Serial update of weights
@@ -241,11 +261,7 @@ public class MultilayerPerceptron {
 
             mse = (error /inputData.length);
             System.out.println("Epoch " + t  + "\n" +  "Loss Function = " + mse);
-            msePerEpoch.add(mse);
-            outputsPerEpoch.add(outputCategoryPerInput);
             difference = Math.abs(previousErrorRate - error);
-            System.out.println("Previous: " + previousErrorRate + "  Current: " + error);
-            System.out.println("Difference: " + difference);
             t += 1;
         }
     }
@@ -257,7 +273,7 @@ public class MultilayerPerceptron {
      * @param weightsPartialSum Partial sum weights array of current layer
      * @param weightsDerivatives Weights derivatives array of current layer
      */
-    private void partialSum(int currentLayerSize, int previousLayerSize, float[][] weightsPartialSum, float[][] weightsDerivatives){
+    private void partialSum(int currentLayerSize, int previousLayerSize, double[][] weightsPartialSum, double[][] weightsDerivatives){
         for (int i = 0; i < currentLayerSize; i++) {
             for (int j = 0; j < previousLayerSize; j++) {
                 weightsPartialSum[i][j] += weightsDerivatives[i][j];
@@ -265,18 +281,16 @@ public class MultilayerPerceptron {
         }
     }
 
-    private OutputCategory[] bestEpoch(){
-        float minMSE = Float.POSITIVE_INFINITY;
-        int minIndex = 0;
-
-        for(int i=0; i<msePerEpoch.size(); i++){
-            if(msePerEpoch.get(i) < minMSE){
-                minMSE = msePerEpoch.get(i);
-                minIndex = i;
-            }
+    /**
+     * Calculate the partial sum of layer biases
+     * @param currentLayerSize Size of current layer
+     * @param biasPartialSum Partial sum biases array of current layer
+     * @param biasDerivatives Biases derivatives array of current layer
+     */
+    private void partialSumBias(int currentLayerSize, double[] biasPartialSum, double[] biasDerivatives){
+        for (int i = 0; i < currentLayerSize; i++) {
+            biasPartialSum[i] += biasDerivatives[i];
         }
-
-        return outputsPerEpoch.get(minIndex);
     }
 
     /**
@@ -287,21 +301,25 @@ public class MultilayerPerceptron {
             for (int j = 0; j < numOfHidden3; j++) {
                 outputWeights[i][j] = outputWeights[i][j] - learningRate * outputWeightsDerivatives[i][j];
             }
+            outputBiasWeights[i] = outputBiasWeights[i] - learningRate * outputBiasDerivatives[i];
         }
         for(int i = 0; i < numOfHidden3; i++) {
             for (int j = 0; j < numOfHidden2; j++) {
                 hidden3Weights[i][j] = hidden3Weights[i][j] - learningRate * hidden3WeightsDerivatives[i][j];
             }
+            hidden3BiasWeights[i] = hidden3BiasWeights[i] - learningRate * hidden3BiasDerivatives[i];
         }
         for(int i = 0; i < numOfHidden2; i++) {
             for (int j = 0; j < numOfHidden1; j++) {
                 hidden2Weights[i][j] = hidden2Weights[i][j] - learningRate * hidden2WeightsDerivatives[i][j];
             }
+            hidden2BiasWeights[i] = hidden2BiasWeights[i] - learningRate * hidden2BiasDerivatives[i];
         }
         for(int i = 0; i < numOfHidden1; i++) {
             for (int j = 0; j < numOfInputs; j++) {
                 hidden1Weights[i][j] = hidden1Weights[i][j] - learningRate * hidden1WeightsDerivatives[i][j];
             }
+            hidden1BiasWeights[i] = hidden1BiasWeights[i] - learningRate * hidden1BiasDerivatives[i];
         }
     }
 
@@ -309,37 +327,29 @@ public class MultilayerPerceptron {
      * Group update of weights
      */
     private void groupUpdateWeights(){
-        //System.out.println("\nNew output weights: ");
         for(int i = 0; i < numOfCategories; i++) {
             for (int j = 0; j < numOfHidden3; j++) {
                 outputWeights[i][j] = outputWeights[i][j] - learningRate * outputWeightsPartialSum[i][j];
-                //System.out.println(outputWeights[i][j]);
             }
-            outputBiasWeights[i] = outputBiasWeights[i] - learningRate * outputBiasDerivatives[i];
+            outputBiasWeights[i] = outputBiasWeights[i] - learningRate * outputBiasPartialSum[i];
         }
-        //System.out.println("\nNew hidden 3 weights: ");
         for(int i = 0; i < numOfHidden3; i++) {
             for (int j = 0; j < numOfHidden2; j++) {
                 hidden3Weights[i][j] = hidden3Weights[i][j] - learningRate * hidden3WeightsPartialSum[i][j];
-                //System.out.println(hidden3Weights[i][j]);
             }
-            hidden3BiasWeights[i] = hidden3BiasWeights[i] - learningRate * hidden3BiasDerivatives[i];
+            hidden3BiasWeights[i] = hidden3BiasWeights[i] - learningRate * hidden3BiasPartialSum[i];
         }
-        //System.out.println("\nNew hidden 2 weights: ");
         for(int i = 0; i < numOfHidden2; i++) {
             for (int j = 0; j < numOfHidden1; j++) {
                 hidden2Weights[i][j] = hidden2Weights[i][j] - learningRate * hidden2WeightsPartialSum[i][j];
-                //System.out.println(hidden2Weights[i][j]);
             }
-            hidden2BiasWeights[i] = hidden2BiasWeights[i] - learningRate * hidden2BiasDerivatives[i];
+            hidden2BiasWeights[i] = hidden2BiasWeights[i] - learningRate * hidden2BiasPartialSum[i];
         }
-        //System.out.println("\nNew hidden 1 weights: ");
         for(int i = 0; i < numOfHidden1; i++) {
             for (int j = 0; j < numOfInputs; j++) {
                 hidden1Weights[i][j] = hidden1Weights[i][j] - learningRate * hidden1WeightsPartialSum[i][j];
-                //System.out.println(hidden1Weights[i][j]);
             }
-            hidden1BiasWeights[i] = hidden1BiasWeights[i] - learningRate * hidden1BiasDerivatives[i];
+            hidden1BiasWeights[i] = hidden1BiasWeights[i] - learningRate * hidden1BiasPartialSum[i];
         }
     }
 
@@ -348,15 +358,14 @@ public class MultilayerPerceptron {
      * @param data_point Input data point
      */
     private void ForwardPass(int data_point){
-        totalInputOfOutputLayer = new float[numOfCategories];
-        totalInputOfHidden3Layer = new float[numOfHidden3];
-        totalInputOfHidden2Layer = new float[numOfHidden2];
-        totalInputOfHidden1Layer = new float[numOfHidden1];
+        totalInputOfOutputLayer = new double[numOfCategories];
+        totalInputOfHidden3Layer = new double[numOfHidden3];
+        totalInputOfHidden2Layer = new double[numOfHidden2];
+        totalInputOfHidden1Layer = new double[numOfHidden1];
 
         // Input layer -> hidden layer 1 forward pass
         for(int i=0; i<numOfHidden1; i++) {
-            hidden1Outputs[i] = inputData[data_point].getX1() * hidden1Weights[i][0] + inputData[data_point].getX2() * hidden1Weights[i][1];
-            totalInputOfHidden1Layer[i] = hidden1Outputs[i] + hidden1BiasWeights[i];
+            totalInputOfHidden1Layer[i] = inputData[data_point].getX1() * hidden1Weights[i][0] + inputData[data_point].getX2() * hidden1Weights[i][1] + hidden1BiasWeights[i];
             hidden1Outputs[i] = actvFunc.selectActivationFunction(totalInputOfHidden1Layer[i], activationFunction);
         }
 
@@ -370,7 +379,7 @@ public class MultilayerPerceptron {
         layerForwardPass(hidden3Outputs, outputWeights, outputs, outputBiasWeights, totalInputOfOutputLayer, true);
 
         // Classification of output
-        outputCategoryPerInput[data_point] = new OutputCategory(classification(outputs));
+        inputData[data_point].setOutput(classification(outputs));
 
     }
 
@@ -380,18 +389,18 @@ public class MultilayerPerceptron {
      * @param layerWeights Current layer (H) weights
      * @param finalLayerOutputs Layer final outputs y(u)
      * @param bias Current layer bias of each neuron
-     * @param layerOutputs Current layer outputs (u) without the activation function
+     * @param currentLayerOutputs Current layer outputs (u) without the activation function
      */
-    private void layerForwardPass(float[] previousLayerOutputs, float[][] layerWeights, float[] finalLayerOutputs, float[] bias, float[] layerOutputs, boolean outputLayer){
-        for(int i=0; i<layerOutputs.length ; i++){
+    private void layerForwardPass(double[] previousLayerOutputs, double[][] layerWeights, double[] finalLayerOutputs, double[] bias, double[] currentLayerOutputs, boolean outputLayer){
+        for(int i=0; i<currentLayerOutputs.length ; i++){
             for(int j=0; j<previousLayerOutputs.length ; j++){
-                finalLayerOutputs[i] += previousLayerOutputs[j]*layerWeights[i][j];
+                currentLayerOutputs[i] += previousLayerOutputs[j]*layerWeights[i][j];
             }
-            layerOutputs[i] = finalLayerOutputs[i] + bias[i];
+            currentLayerOutputs[i] += bias[i];
             if(outputLayer){
-                finalLayerOutputs[i] = actvFunc.logistic(layerOutputs[i]);
+                finalLayerOutputs[i] = actvFunc.logistic(currentLayerOutputs[i]);
             }else{
-                finalLayerOutputs[i] = actvFunc.selectActivationFunction(layerOutputs[i], activationFunction);
+                finalLayerOutputs[i] = actvFunc.selectActivationFunction(currentLayerOutputs[i], activationFunction);
             }
         }
     }
@@ -412,9 +421,9 @@ public class MultilayerPerceptron {
      * @param outputs array of category outputs
      * @return category of input data
      */
-    public int[] classification(float[] outputs) {
+    public int[] classification(double[] outputs) {
         // Initialize max to the first element of the array
-        float max = 0F;
+        double max = 0F;
         int[] category = new int[4];
         // Iterate through the array to find the maximum value
         for (int i=0; i < numOfCategories; i++) {
@@ -441,14 +450,13 @@ public class MultilayerPerceptron {
      * @param inputDataId input data point
      */
     public void deltaOutput(int inputDataId){
-        outputWeightsDerivatives = new float[numOfCategories][numOfHidden3];
-        outputBiasDerivatives = new float[numOfCategories];
-        deltaOfOutput = new float[numOfCategories];
+        outputWeightsDerivatives = new double[numOfCategories][numOfHidden3];
+        outputBiasDerivatives = new double[numOfCategories];
+        deltaOfOutput = new double[numOfCategories];
         for(int i=0; i<numOfCategories; i++){
-            float g = actvFunc.selectBackpropagationDerivative(totalInputOfOutputLayer[i], "logistic");
-            int[] o = inputData[inputDataId].getCategory();
-            int[] t = outputCategoryPerInput[inputDataId].getOutputCategory();
-            deltaOfOutput[i] = g*(equalCategories(o, t));
+            double g = outputs[i] * (1 - outputs[i]);
+            int[] target = inputData[inputDataId].getTarget();
+            deltaOfOutput[i] = g * (outputs[i] - target[i]);
             for(int j=0; j<numOfHidden3; j++){
                 outputWeightsDerivatives[i][j] = deltaOfOutput[i]*hidden3Outputs[j];
             }
@@ -462,13 +470,13 @@ public class MultilayerPerceptron {
      * δ_i = g(u_i)*Σ(w_ji*δ_j)
      */
     public void deltaHiddenLayer3(){
-        deltaOfHidden3 = new float[numOfHidden3];
-        hidden3BiasDerivatives = new float[numOfHidden3];
-        hidden3WeightsDerivatives = new float[numOfHidden3][numOfHidden2];
+        deltaOfHidden3 = new double[numOfHidden3];
+        hidden3BiasDerivatives = new double[numOfHidden3];
+        hidden3WeightsDerivatives = new double[numOfHidden3][numOfHidden2];
         // list of output layer weights
         for(int i=0; i<numOfHidden3; i++){ // for each neuron
-            float g = actvFunc.selectBackpropagationDerivative(totalInputOfHidden3Layer[i], activationFunction); // derivative of neuron output
-            float sumOfOutputLayerNeuronsDelta = 0F; // initialize summation of weight*delta of each output neuron
+            double g = actvFunc.selectBackpropagationDerivative(totalInputOfHidden3Layer[i], activationFunction); // derivative of neuron output
+            double sumOfOutputLayerNeuronsDelta = 0F; // initialize summation of weight*delta of each output neuron
             for(int j=0; j<numOfCategories; j++){
                 sumOfOutputLayerNeuronsDelta += outputWeights[j][i]*deltaOfOutput[j];
             }
@@ -486,12 +494,12 @@ public class MultilayerPerceptron {
      * δ_i = g(u_i)*Σ(w_ji*δ_j)
      */
     public void deltaHiddenLayer2(){
-        deltaOfHidden2 = new float[numOfHidden2];
-        hidden2BiasDerivatives = new float[numOfHidden2];
-        hidden2WeightsDerivatives = new float[numOfHidden2][numOfHidden1];
+        deltaOfHidden2 = new double[numOfHidden2];
+        hidden2BiasDerivatives = new double[numOfHidden2];
+        hidden2WeightsDerivatives = new double[numOfHidden2][numOfHidden1];
         for(int i=0; i<numOfHidden2; i++){ // for each neuron
-            float g = actvFunc.selectBackpropagationDerivative(totalInputOfHidden2Layer[i], activationFunction); // derivative of neuron output
-            float sumOfOutputLayerNeuronsDelta = 0F; // initialize summation of weight*delta of each output neuron
+            double g = actvFunc.selectBackpropagationDerivative(totalInputOfHidden2Layer[i], activationFunction); // derivative of neuron output
+            double sumOfOutputLayerNeuronsDelta = 0F; // initialize summation of weight*delta of each output neuron
             for(int j=0; j<numOfHidden3; j++){
                 sumOfOutputLayerNeuronsDelta += hidden3Weights[j][i]*deltaOfHidden3[j]; // CHECK SWAP [i][j]
             }
@@ -510,12 +518,12 @@ public class MultilayerPerceptron {
      * @param inputDataId input data point
      */
     public void deltaHiddenLayer1(int inputDataId){
-        deltaOfHidden1 = new float[numOfHidden1];
-        hidden1BiasDerivatives = new float[numOfHidden1];
-        hidden1WeightsDerivatives = new float[numOfHidden1][numOfInputs];
+        deltaOfHidden1 = new double[numOfHidden1];
+        hidden1BiasDerivatives = new double[numOfHidden1];
+        hidden1WeightsDerivatives = new double[numOfHidden1][numOfInputs];
         for(int i=0; i<numOfHidden1; i++){ // for each neuron
-            float g = actvFunc.selectBackpropagationDerivative(totalInputOfHidden1Layer[i], activationFunction); // derivative of neuron output
-            float sumOfOutputLayerNeuronsDelta = 0F; // initialize summation of weight*delta of each output neuron
+            double g = actvFunc.selectBackpropagationDerivative(totalInputOfHidden1Layer[i], activationFunction); // derivative of neuron output
+            double sumOfOutputLayerNeuronsDelta = 0F; // initialize summation of weight*delta of each output neuron
             for(int j=0; j<numOfHidden2; j++){
                 sumOfOutputLayerNeuronsDelta += hidden2Weights[j][i]*deltaOfHidden2[j];
             }
@@ -533,19 +541,17 @@ public class MultilayerPerceptron {
      * @return classification error
      */
     public int LossFunction(int data_point) {
-        int[] o = inputData[data_point].getCategory();
-        int[] t = outputCategoryPerInput[data_point].getOutputCategory();
+        int[] o = inputData[data_point].getOutput();
+        int[] t = inputData[data_point].getTarget();
         return equalCategories(o, t);
     }
 
-    public int equalCategories(int[] o, int[] t){
-        int e;
-        if (Arrays.equals(o, t)){
-            e = 0;
-        }else {
-            e = 1;
+    public int equalCategories(int[] output, int[] target){
+        if (Arrays.equals(output, target)) {
+            return 0;
+        }else{
+            return 1;
         }
-        return e;
     }
 
     /**
@@ -559,16 +565,15 @@ public class MultilayerPerceptron {
 
     /**
      * Test dataset and generalization ability of MLP
-     */
     public void test() throws IOException {
         LoadDataset(Path.of("data/test.csv"));
         generalizationAbility();
-    }
+    }**/
 
     /**
      * Calculation of the ability(%) of the MLP to generalize for unseen data.
-     */
-    public float generalizationAbility() throws IOException {
+
+    public double generalizationAbility() throws IOException {
         int counter = 0;
 
         FileWriter test = new FileWriter("data/test_plot.csv"); ;
@@ -582,9 +587,10 @@ public class MultilayerPerceptron {
                 test.write(inputData[i].getX1() + "," + inputData[i].getX2() +  ",Wrong" + "\n");
             }
         }
-        return ((float) counter / inputData.length)*100;
-    }
+        return ((double) counter / inputData.length)*100;
+    }**/
 
+    /**
     public void saveResultToCsv(){
         try {
             FileWriter csv = new FileWriter("data/results.csv", true);
@@ -594,5 +600,5 @@ public class MultilayerPerceptron {
             System.out.println("An error occurred.");
             e.printStackTrace();
         }
-    }
+    }**/
 }
