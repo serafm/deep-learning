@@ -7,7 +7,7 @@ public class ActivationFunctions {
     }
 
     protected double tanh(double x){
-        return (Math.exp( x - Math.exp(-x))) / (Math.exp( x + Math.exp(-x))) ;
+        return (Math.exp(x) - Math.exp(-x)) / (Math.exp(x) + Math.exp(-x));
     }
 
     protected double relu(double x){

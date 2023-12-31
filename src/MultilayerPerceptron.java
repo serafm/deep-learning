@@ -19,6 +19,7 @@ public class MultilayerPerceptron {
     private final int batch_size;
     private final String activationFunction;
     private Datapoint[] inputData;
+    ArrayList<Double> lossFunctionEachEpoch;
 
     private double[][] hidden1Weights;
     private double[][] hidden2Weights;
@@ -34,7 +35,6 @@ public class MultilayerPerceptron {
     private double[] outputs;
     private final double learningRate;
     private final double threshold;
-    private ArrayList<Double> msePerEpoch;
 
     private double[] deltaOfHidden3;
     private double[] deltaOfHidden2;
@@ -116,10 +116,6 @@ public class MultilayerPerceptron {
             System.out.println("An error occurred.");
             e.printStackTrace();
         }
-
-        /**for (int i = 0; i < inputData.length; i++){
-            System.out.println(inputData[i].getX1() + " " + inputData[i].getX2() + " " + Arrays.toString(inputData[i].getTarget()) + " " + Arrays.toString(inputData[i].getOutput()));
-        }**/
     }
 
     /**
@@ -198,7 +194,7 @@ public class MultilayerPerceptron {
         double difference = Double.POSITIVE_INFINITY;
         double error = 0;
         double mse = Double.POSITIVE_INFINITY;
-        msePerEpoch = new ArrayList<>();
+        lossFunctionEachEpoch = new ArrayList<>();
 
         outputWeightsPartialSum = new double[numOfCategories][numOfHidden3];
         hidden3WeightsPartialSum = new double[numOfHidden3][numOfHidden2];
@@ -261,6 +257,7 @@ public class MultilayerPerceptron {
 
             mse = (error /inputData.length);
             System.out.println("Epoch " + t  + "\n" +  "Loss Function = " + mse);
+            lossFunctionEachEpoch.add(mse);
             difference = Math.abs(previousErrorRate - error);
             t += 1;
         }
@@ -565,14 +562,15 @@ public class MultilayerPerceptron {
 
     /**
      * Test dataset and generalization ability of MLP
+     */
     public void test() throws IOException {
         LoadDataset(Path.of("data/test.csv"));
         generalizationAbility();
-    }**/
+    }
 
     /**
      * Calculation of the ability(%) of the MLP to generalize for unseen data.
-
+     */
     public double generalizationAbility() throws IOException {
         int counter = 0;
 
@@ -580,7 +578,7 @@ public class MultilayerPerceptron {
 
         for(int i=0; i<inputData.length; i++){
             ForwardPass(i);
-            if( Arrays.equals(inputData[i].getCategory(), outputCategoryPerInput[i].getOutputCategory())){
+            if( Arrays.equals(inputData[i].getTarget(), inputData[i].getOutput())){
                 counter += 1;
                 test.write(inputData[i].getX1() + "," + inputData[i].getX2() +  ",Correct" + "\n");
             } else {
@@ -588,17 +586,21 @@ public class MultilayerPerceptron {
             }
         }
         return ((double) counter / inputData.length)*100;
-    }**/
+    }
 
-    /**
     public void saveResultToCsv(){
         try {
             FileWriter csv = new FileWriter("data/results.csv", true);
+            FileWriter csv_lossFunc = new FileWriter("data/loss_function_epochs.csv", true);
+            for (Double functionEachEpoch : lossFunctionEachEpoch) {
+                csv_lossFunc.write(functionEachEpoch + "\n");
+            }
             csv.write("\n" + numOfHidden1 + ", " + numOfHidden2 + ", " + numOfHidden3 + ", " + activationFunction + ", " + batch_size + ", " + generalizationAbility());
             csv.close();
+            csv_lossFunc.close();
         } catch (IOException e) {
             System.out.println("An error occurred.");
             e.printStackTrace();
         }
-    }**/
+    }
 }
