@@ -20,13 +20,13 @@ public class ActivationFunctions {
 
     protected double derivativeRelu(double x){
         if (x < 0){
-            return 0F;
+            return 0;
         }
-        return 1F;
+        return 1;
     }
 
     protected double derivativeLogistic(double x){
-        return Math.exp(-x) / Math.pow((1 + Math.exp(-x)), 2);
+        return logistic(x) * (1 - logistic(x)); //Math.exp(-x) / Math.pow((1 + Math.exp(-x)), 2);
     }
 
     public double selectActivationFunction(double x, String activationFunction){
